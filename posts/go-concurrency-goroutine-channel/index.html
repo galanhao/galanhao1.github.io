@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Go 并发编程：Goroutine 与 Channel 实战</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; max-width: 800px; margin: 0 auto; padding: 2rem; }
+        pre { border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+<article><h1 id="go-goroutine--channel-">Go 并发编程：Goroutine 与 Channel 实战</h1>
+<p>Go 语言的并发模型基于 CSP 理论，通过 goroutine 和 channel 实现高效并发。</p>
+<h2 id="goroutine-">Goroutine 基础</h2>
+<pre style="color:#e6edf3;background-color:#0d1117;"><code><span style="display:flex;"><span><span style="color:#ff7b72">package</span> main
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#ff7b72">import</span> (
+</span></span><span style="display:flex;"><span>    <span style="color:#a5d6ff">&#34;fmt&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a5d6ff">&#34;sync&#34;</span>
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#ff7b72">func</span> <span style="color:#d2a8ff;font-weight:bold">worker</span>(id <span style="color:#ff7b72">int</span>, wg <span style="color:#ff7b72;font-weight:bold">*</span>sync.WaitGroup) {
+</span></span><span style="display:flex;"><span>    <span style="color:#ff7b72">defer</span> wg.<span style="color:#d2a8ff;font-weight:bold">Done</span>()
+</span></span><span style="display:flex;"><span>    fmt.<span style="color:#d2a8ff;font-weight:bold">Printf</span>(<span style="color:#a5d6ff">&#34;Worker %d done\n&#34;</span>, id)
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#ff7b72">func</span> <span style="color:#d2a8ff;font-weight:bold">main</span>() {
+</span></span><span style="display:flex;"><span>    <span style="color:#ff7b72">var</span> wg sync.WaitGroup
+</span></span><span style="display:flex;"><span>    <span style="color:#ff7b72">for</span> i <span style="color:#ff7b72;font-weight:bold">:=</span> <span style="color:#a5d6ff">1</span>; i <span style="color:#ff7b72;font-weight:bold">&lt;=</span> <span style="color:#a5d6ff">5</span>; i<span style="color:#ff7b72;font-weight:bold">++</span> {
+</span></span><span style="display:flex;"><span>        wg.<span style="color:#d2a8ff;font-weight:bold">Add</span>(<span style="color:#a5d6ff">1</span>)
+</span></span><span style="display:flex;"><span>        <span style="color:#ff7b72">go</span> <span style="color:#d2a8ff;font-weight:bold">worker</span>(i, <span style="color:#ff7b72;font-weight:bold">&amp;</span>wg)
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    wg.<span style="color:#d2a8ff;font-weight:bold">Wait</span>()
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre><h2 id="channel-">Channel 通信</h2>
+<pre style="color:#e6edf3;background-color:#0d1117;"><code><span style="display:flex;"><span><span style="color:#ff7b72">func</span> <span style="color:#d2a8ff;font-weight:bold">sum</span>(s []<span style="color:#ff7b72">int</span>, c <span style="color:#ff7b72">chan</span> <span style="color:#ff7b72">int</span>) {
+</span></span><span style="display:flex;"><span>    total <span style="color:#ff7b72;font-weight:bold">:=</span> <span style="color:#a5d6ff">0</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#ff7b72">for</span> _, v <span style="color:#ff7b72;font-weight:bold">:=</span> <span style="color:#ff7b72">range</span> s {
+</span></span><span style="display:flex;"><span>        total <span style="color:#ff7b72;font-weight:bold">+=</span> v
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    c <span style="color:#ff7b72;font-weight:bold">&lt;-</span> total
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#ff7b72">func</span> <span style="color:#d2a8ff;font-weight:bold">main</span>() {
+</span></span><span style="display:flex;"><span>    s <span style="color:#ff7b72;font-weight:bold">:=</span> []<span style="color:#ff7b72">int</span>{<span style="color:#a5d6ff">7</span>, <span style="color:#a5d6ff">2</span>, <span style="color:#a5d6ff">8</span>, <span style="color:#ff7b72;font-weight:bold">-</span><span style="color:#a5d6ff">9</span>, <span style="color:#a5d6ff">4</span>, <span style="color:#a5d6ff">0</span>}
+</span></span><span style="display:flex;"><span>    c <span style="color:#ff7b72;font-weight:bold">:=</span> make(<span style="color:#ff7b72">chan</span> <span style="color:#ff7b72">int</span>)
+</span></span><span style="display:flex;"><span>    <span style="color:#ff7b72">go</span> <span style="color:#d2a8ff;font-weight:bold">sum</span>(s[:len(s)<span style="color:#ff7b72;font-weight:bold">/</span><span style="color:#a5d6ff">2</span>], c)
+</span></span><span style="display:flex;"><span>    <span style="color:#ff7b72">go</span> <span style="color:#d2a8ff;font-weight:bold">sum</span>(s[len(s)<span style="color:#ff7b72;font-weight:bold">/</span><span style="color:#a5d6ff">2</span>:], c)
+</span></span><span style="display:flex;"><span>    x, y <span style="color:#ff7b72;font-weight:bold">:=</span> <span style="color:#ff7b72;font-weight:bold">&lt;-</span>c, <span style="color:#ff7b72;font-weight:bold">&lt;-</span>c
+</span></span><span style="display:flex;"><span>    fmt.<span style="color:#d2a8ff;font-weight:bold">Println</span>(x, y, x<span style="color:#ff7b72;font-weight:bold">+</span>y)
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre><h2 id="select-">select 语句</h2>
+<pre style="color:#e6edf3;background-color:#0d1117;"><code><span style="display:flex;"><span><span style="color:#ff7b72">func</span> <span style="color:#d2a8ff;font-weight:bold">fibonacci</span>(c, quit <span style="color:#ff7b72">chan</span> <span style="color:#ff7b72">int</span>) {
+</span></span><span style="display:flex;"><span>    x, y <span style="color:#ff7b72;font-weight:bold">:=</span> <span style="color:#a5d6ff">0</span>, <span style="color:#a5d6ff">1</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#ff7b72">for</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#ff7b72">select</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#ff7b72">case</span> c <span style="color:#ff7b72;font-weight:bold">&lt;-</span> x:
+</span></span><span style="display:flex;"><span>            x, y = y, x<span style="color:#ff7b72;font-weight:bold">+</span>y
+</span></span><span style="display:flex;"><span>        <span style="color:#ff7b72">case</span> <span style="color:#ff7b72;font-weight:bold">&lt;-</span>quit:
+</span></span><span style="display:flex;"><span>            fmt.<span style="color:#d2a8ff;font-weight:bold">Println</span>(<span style="color:#a5d6ff">&#34;quit&#34;</span>)
+</span></span><span style="display:flex;"><span>            <span style="color:#ff7b72">return</span>
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre><h2 id="heading">总结</h2>
+<p>Goroutine 轻量高效，channel 提供安全的数据传递机制，select 实现多路复用，是 Go 并发编程的核心三件套。</p>
+</article>
+</body>
+</html>

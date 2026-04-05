@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PostgreSQL 索引与性能调优</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; max-width: 800px; margin: 0 auto; padding: 2rem; }
+        pre { border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+<article><h1 id="postgresql-">PostgreSQL 性能优化</h1>
+<h2 id="gin-">GIN 索引</h2>
+<pre style="color:#e6edf3;background-color:#0d1117;"><code><span style="display:flex;"><span><span style="color:#ff7b72">CREATE</span><span style="color:#6e7681"> </span><span style="color:#ff7b72">INDEX</span><span style="color:#6e7681"> </span>idx_posts_tags<span style="color:#6e7681"> </span><span style="color:#ff7b72">ON</span><span style="color:#6e7681"> </span>posts<span style="color:#6e7681"> </span><span style="color:#ff7b72">USING</span><span style="color:#6e7681"> </span>GIN(tags);<span style="color:#6e7681">
+</span></span></span></code></pre><h2 id="heading">部分索引</h2>
+<pre style="color:#e6edf3;background-color:#0d1117;"><code><span style="display:flex;"><span><span style="color:#ff7b72">CREATE</span><span style="color:#6e7681"> </span><span style="color:#ff7b72">INDEX</span><span style="color:#6e7681"> </span>idx_active<span style="color:#6e7681"> </span><span style="color:#ff7b72">ON</span><span style="color:#6e7681"> </span>users(email)<span style="color:#6e7681"> </span><span style="color:#ff7b72">WHERE</span><span style="color:#6e7681"> </span>deleted_at<span style="color:#6e7681"> </span><span style="color:#ff7b72">IS</span><span style="color:#6e7681"> </span><span style="color:#ff7b72">NULL</span>;<span style="color:#6e7681">
+</span></span></span></code></pre><h2 id="explain-analyze">EXPLAIN ANALYZE</h2>
+<pre style="color:#e6edf3;background-color:#0d1117;"><code><span style="display:flex;"><span><span style="color:#ff7b72">EXPLAIN</span><span style="color:#6e7681"> </span><span style="color:#ff7b72">ANALYZE</span><span style="color:#6e7681"> </span><span style="color:#ff7b72">SELECT</span><span style="color:#6e7681"> </span><span style="color:#ff7b72;font-weight:bold">*</span><span style="color:#6e7681"> </span><span style="color:#ff7b72">FROM</span><span style="color:#6e7681"> </span>posts<span style="color:#6e7681"> </span><span style="color:#ff7b72">WHERE</span><span style="color:#6e7681"> </span>published<span style="color:#ff7b72;font-weight:bold">=</span><span style="color:#ff7b72">true</span><span style="color:#6e7681"> </span><span style="color:#ff7b72">ORDER</span><span style="color:#6e7681"> </span><span style="color:#ff7b72">BY</span><span style="color:#6e7681"> </span>created_at<span style="color:#6e7681"> </span><span style="color:#ff7b72">DESC</span><span style="color:#6e7681"> </span><span style="color:#ff7b72">LIMIT</span><span style="color:#6e7681"> </span><span style="color:#a5d6ff">20</span>;<span style="color:#6e7681">
+</span></span></span></code></pre></article>
+</body>
+</html>
